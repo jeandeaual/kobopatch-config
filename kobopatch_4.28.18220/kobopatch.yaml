@@ -1,7 +1,7 @@
 ## Works with kobopatch v0.14.0 and later.
-## You can update kobopatch by downloading the latest release from https://github.com/geek1011/kobopatch/releases. 
-version: 4.18.13737
-in: src/kobo-update-4.18.13737.zip
+## You can update kobopatch by downloading the latest release from https://github.com/geek1011/kobopatch/releases.
+version: 4.28.18220
+in: src/kobo-update-4.28.18220.zip
 out: out/KoboRoot.tgz
 log: out/log.txt
 
@@ -14,7 +14,7 @@ patches:
   src/librmsdk.so.1.0.0.yaml: usr/local/Kobo/librmsdk.so.1.0.0
 
 ## You can put lines in the following section to override the enabled state of patches.
-## The indentation matters! Each override should be indented by 4 spaces. Add to the 
+## The indentation matters! Each override should be indented by 4 spaces. Add to the
 ## section below. This section can be copy and pasted into newer patch versions to
 ## keep your selections.
 ##
@@ -37,21 +37,26 @@ overrides:
     Reduce new header/footer height: yes
   src/libadobe.so.yaml:
     Remove PDF map widget shown during panning: yes
-    Keep PDF pan position: yes
   src/libnickel.so.1.0.0.yaml:
     Always show confirmation dialog before upgrading: yes
     Disable all tutorial dialogs: yes
     Remove recommendations (row1col2) from home screen: yes
-    Increase TOC level indentation and fix extra indentation bug: yes
+    # Note: The "Increase TOC level indentation" and "Increase TOC level indentation
+    # and fix extra indentation bug" patches are not necessary anymore in firmware
+    # 4.24.15672+ and have been removed since the fixes have been integrated into
+    # the original firmware. The default indentation is now around 3x larger than it
+    # was before (and it scales for each device), and the firmware will always
+    # subtract 1 from the depth before applying the indentation (since it's indexed
+    # from 1+ rather than 0+).
+    # Increase TOC level indentation and fix extra indentation bug: yes
     Allow rotation on all devices: yes
     Don't uppercase header/footer text: yes
-    Freedom to advanced fonts control: yes
     Set KePub hyphenation: yes
-    KePub stylesheet additions: yes
-    ePub uniform font scale: yes
+    # MISSING: geek1011: ePub uniform font scale (this will need a complete rewrite for 18220+ since the logic has been completely reworked; also note that it may not be necessary on certain devices anymore)
+    # ePub uniform font scale: yes
     Shorten dictionary entry not found message: yes
   src/librmsdk.so.1.0.0.yaml:
-    Default ePub monospace font (Courier): yes
+    Default ePub monospace font: yes
 
 ## TRANSLATIONS ##
 # Optional, use only if lrelease is not in PATH and if translations are needed
