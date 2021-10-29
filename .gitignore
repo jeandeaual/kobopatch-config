@@ -1,0 +1,5 @@
+*.exe
+**/bin/kobopatch-*
+**/src/kobo-update-*.zip
+**/out/log.txt
+**/out/KoboRoot.tgz
