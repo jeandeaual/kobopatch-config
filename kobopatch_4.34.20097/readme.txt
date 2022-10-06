@@ -1,10 +1,10 @@
-This is for use with firmware 4.28.18220.
+This is for use with firmware 4.34.20097.
 
 === How to use ===
 Make sure your kobo is already running the firmware version you are trying to patch.
 
 1. Download the firmware from https://pgaskin.net/KoboStuff/kobofirmware.html to the src folder.
-   The zip should be called something like kobo-update-4.28.18220.zip. You may need to rename it.
+   The zip should be called something like kobo-update-4.34.20097.zip. You may need to rename it.
 2. Enable patches in the files in the src folder (or use the overrides in kobopatch.yaml).
 3. Run kobopatch.bat on Windows, or kobopatch.sh on Linux.
 4. If the patching succeeded, a file named KoboRoot.tgz will be created.

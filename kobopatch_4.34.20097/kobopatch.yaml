@@ -1,7 +1,7 @@
 ## Works with kobopatch v0.15.0 and later.
-## You can update kobopatch by downloading the latest release from https://github.com/pgaskin/kobopatch/releases. 
-version: 4.28.18220
-in: src/kobo-update-4.28.18220.zip
+## You can update kobopatch by downloading the latest release from https://github.com/pgaskin/kobopatch/releases.
+version: 4.34.20097
+in: src/kobo-update-4.34.20097.zip
 out: out/KoboRoot.tgz
 log: out/log.txt
 
@@ -14,7 +14,7 @@ patches:
   src/librmsdk.so.1.0.0.yaml: usr/local/Kobo/librmsdk.so.1.0.0
 
 ## You can put lines in the following section to override the enabled state of patches.
-## The indentation matters! Each override should be indented by 4 spaces. Add to the 
+## The indentation matters! Each override should be indented by 4 spaces. Add to the
 ## section below. This section can be copy and pasted into newer patch versions to
 ## keep your selections.
 ##
@@ -27,8 +27,27 @@ patches:
 ##     You get the idea: yes
 overrides:
   src/nickel.yaml:
+    Show all games: yes
+    Increase size of kepub chapter progress chart: yes
+    Reduce top/bottom page spacer: yes
+    Increase home screen cover size: yes
+    Dictionary pop-up - increase available text area: yes
+    Increase Book Details synopsis area: yes
+    Increase library cover size: yes
+    Reduce new header/footer height: yes
   src/libadobe.so.yaml:
+    Remove PDF map widget shown during panning: yes
   src/libnickel.so.1.0.0.yaml:
+    Always show confirmation dialog before upgrading: yes
+    Allow USB storage even when device locked: yes
+    Disable all tutorial dialogs: yes
+    Remove recommendations (row1col2) from home screen: yes
+    Allow rotation on all devices: yes
+    Don't uppercase header/footer text and change page number text: yes
+    Set KePub hyphenation: yes
+    # MISSING: geek1011: ePub uniform font scale (this will need a complete rewrite for 18220+ since the logic has been completely reworked; also note that it may not be necessary on certain devices anymore)
+    # ePub uniform font scale: yes
+    Shorten dictionary entry not found message: yes
   src/librmsdk.so.1.0.0.yaml:
 
 ## TRANSLATIONS ##

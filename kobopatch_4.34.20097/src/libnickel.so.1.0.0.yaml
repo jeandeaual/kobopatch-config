@@ -47,18 +47,24 @@ My 24 line spacing values:
     # basically rewrite the entire code starting where values are added:
     # save r5, initialise loop counter
   - BaseAddress:  {Sym: "ReadingSettings::lineHeightScalars() const", Rel: 84} # starting at first QList<double>::append(double const&)
-  - ReplaceBytes: {Offset:  0, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: A9 46 00 25}              # mov sb, r5       mov r5, #0
-  - ReplaceBytes: {Offset:  4, FindH: 6D A3, ReplaceH: ED 00}                         # lsls r5, r5, #3
+  - ReplaceBytes: {Offset:  0, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: 00 00 00 00} # clear out the BLX
+  - ReplaceBytes: {Offset: 20, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: 00 00 00 00} # clear out the BLX
+  - ReplaceBytes: {Offset:  0, FindH: 00 00, ReplaceH: A9 46} # mov  sb, r5
+  - ReplaceBytes: {Offset:  2, FindH: 00 00, ReplaceH: 00 25} # mov  r5, #0
+  - ReplaceBytes: {Offset:  4, FindH: 6C A3, ReplaceH: ED 00} # lsls r5, r5, #3
     # loop to load 14 vals from new table
-  - ReplaceBytes: {Offset:  6, FindH: D3 E9 00 23 07 F1, ReplaceH: 20 46 04 A1 29 44} # mov r0, r4   adr r1, #0x10  add r1, r5
-  - ReplaceBytes: {Offset: 12, FindH: 80 01 20 46,       ReplaceInstBLX: {SymPLT: "QList<double>::append(double const&)"}}
-  - ReplaceBytes: {Offset: 16, FindH: 61 E9 1C 23,       ReplaceH: 08 35 70 2D}       # add r5, #8   cmp r5, 112 ## NOTE: 14*8=112
-  - ReplaceBytes: {Offset: 20, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: 00 00 00 00}       # clear out the BLX in the way of the next two replacements
-  - ReplaceBytes: {Offset: 20, FindH: 00 00,             ReplaceH: F7 D1}             # bne #-10
-    # jump over new table
-  - ReplaceBytes: {Offset: 22, FindH: 00 00 6A A3 D3 E9, ReplaceH: 7C E0 00 BF 00 BF} # b #0xFC
+  - ReplaceBytes: {Offset:  6, FindH: D3 E9, ReplaceH: 20 46} # mov  r0, r4
+  - ReplaceBytes: {Offset:  8, FindH: 00 23, ReplaceH: 04 A1} # adr  r1, #0x10
+  - ReplaceBytes: {Offset: 10, FindH: 07 F1, ReplaceH: 29 44} # add  r1, r5
+  - ReplaceBytes: {Offset: 12, FindH: 80 01 20 46, ReplaceInstBLX: {SymPLT: "QList<double>::append(double const&)"}}
+  - ReplaceBytes: {Offset: 16, FindH: 61 E9, ReplaceH: 08 35} # add  r5, #8 (sizeof(double))
+  - ReplaceBytes: {Offset: 18, FindH: 1C 23, ReplaceH: 70 2D} # cmp  r5, 112 (14*sizeof(double))
+  - ReplaceBytes: {Offset: 20, FindH: 00 00, ReplaceH: F7 D1} # bne  #-10
+    # jump to the rest of the new code
+  - ReplaceBytes: {Offset: 22, FindH: 00 00, ReplaceH: 7B E0} # b #250 (356 − (84 + 22))
+  - ReplaceBytes: {Offset: 24, FindH: 69 A3 D3 E9, ReplaceInstNOP: true} # unused
     # new table: 14 8-aligned doubles
-  - BaseAddress:  {Sym: "ReadingSettings::lineHeightScalars() const", Rel: 112} # right after previous instruction
+  - BaseAddress:  {Sym: "ReadingSettings::lineHeightScalars() const", Rel: 112} # right after previous instruction (84 + 24 + 4)
   - ReplaceBytes: {Offset:  12, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: 00 00 00 00} # first, clear out the BLXs in the way
   - ReplaceBytes: {Offset:  32, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: 00 00 00 00}
   - ReplaceBytes: {Offset:  58, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: 00 00 00 00}
@@ -66,29 +72,33 @@ My 24 line spacing values:
   - ReplaceBytes: {Offset: 100, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: 00 00 00 00}
   - ReplaceBytes: {Offset:   0, FindH: 00 23 07 F1 80 01 20 46, ReplaceH: 00 00 00 00 00 00 F0 3F} # table of 1.0f values, to be replaced later
   - ReplaceBytes: {Offset:   8, FindH: 61 E9 1A 23 00 00 00 00, ReplaceH: 00 00 00 00 00 00 F0 3F}
-  - ReplaceBytes: {Offset:  16, FindH: 67 A3 D3 E9 00 23 07 F1, ReplaceH: 00 00 00 00 00 00 F0 3F}
+  - ReplaceBytes: {Offset:  16, FindH: 66 A3 D3 E9 00 23 07 F1, ReplaceH: 00 00 00 00 00 00 F0 3F}
   - ReplaceBytes: {Offset:  24, FindH: 80 01 20 46 61 E9 18 23, ReplaceH: 00 00 00 00 00 00 F0 3F}
   - ReplaceBytes: {Offset:  32, FindH: 00 00 00 00 43 F2 33 33, ReplaceH: 00 00 00 00 00 00 F0 3F}
   - ReplaceBytes: {Offset:  40, FindH: 4F F0 33 32 C3 F6 F3 73, ReplaceH: 00 00 00 00 00 00 F0 3F}
   - ReplaceBytes: {Offset:  48, FindH: 07 F1 80 01 20 46 61 E9, ReplaceH: 00 00 00 00 00 00 F0 3F}
-  - ReplaceBytes: {Offset:  56, FindH: 16 23 00 00 00 00 5E A3, ReplaceH: 00 00 00 00 00 00 F0 3F}
+  - ReplaceBytes: {Offset:  56, FindH: 16 23 00 00 00 00 5D A3, ReplaceH: 00 00 00 00 00 00 F0 3F}
   - ReplaceBytes: {Offset:  64, FindH: D3 E9 00 23 07 F1 80 01, ReplaceH: 00 00 00 00 00 00 F0 3F}
   - ReplaceBytes: {Offset:  72, FindH: 20 46 61 E9 14 23 00 00, ReplaceH: 00 00 00 00 00 00 F0 3F}
   - ReplaceBytes: {Offset:  80, FindH: 00 00 00 23 00 22 C3 F6, ReplaceH: 00 00 00 00 00 00 F0 3F}
   - ReplaceBytes: {Offset:  88, FindH: F8 73 07 F1 80 01 20 46, ReplaceH: 00 00 00 00 00 00 F0 3F}
   - ReplaceBytes: {Offset:  96, FindH: 61 E9 12 23 00 00 00 00, ReplaceH: 00 00 00 00 00 00 F0 3F}
-  - ReplaceBytes: {Offset: 104, FindH: 55 A3 D3 E9 00 23 07 F1, ReplaceH: 00 00 00 00 00 00 F0 3F}
+  - ReplaceBytes: {Offset: 104, FindH: 54 A3 D3 E9 00 23 07 F1, ReplaceH: 00 00 00 00 00 00 F0 3F}
     # jump target after table
-  - BaseAddress:  {Sym: "ReadingSettings::lineHeightScalars() const", Rel: 356} # starting at first QList<double>::append(double const&)
+  - BaseAddress:  {Sym: "ReadingSettings::lineHeightScalars() const", Rel: 356} # starting right after the second-last QList<double>::append(double const&)
+  - ReplaceBytes: {Offset: 18, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: 00 00 00 00} # clear the BLX in the way of the last two replacements
     # initialise loop counter
-  - ReplaceBytes: {Offset:  0, FindH: 00 23 00 22,       ReplaceH: 00 BF 00 25}       # nop   movs r5, #0
-    # loop to load 10 vals from old table
-  - ReplaceBytes: {Offset:  4, FindH: C4 F2 08 03 07 F1, ReplaceH: 20 46 29 A1 29 44} # mov r0, r4   adr r1, #0xA4   add r1, r5 ## NOTE: adr r1, #0xA4 sets r1 to the beginning of the old table
+  - ReplaceBytes: {Offset:  0, FindH: 00 23,             ReplaceH: 00 25}       # movs  r5, #0
+    # loop to load 10 vals from old table (CDCC CCCC CCCC F03F 1F85)
+  - ReplaceBytes: {Offset:  2, FindH: 00 22,             ReplaceH: 20 46}       # mov   r0, r4
+  - ReplaceBytes: {Offset:  4, FindH: C4 F2 08 03,       ReplaceH: 0F F2 A0 01} # adr.w r1, #164 (old_table_start - (356 + 4) = 524 - 360)
+  - ReplaceBytes: {Offset:  8, FindH: 07 F1,             ReplaceH: 29 44}       # add   r1, r5
   - ReplaceBytes: {Offset: 10, FindH: 80 01 20 46,       ReplaceInstBLX: {SymPLT: "QList<double>::append(double const&)"}}
-  - ReplaceBytes: {Offset: 18, FindInstBLX: {SymPLT: "QList<double>::append(double const&)"}, ReplaceH: 00 00 00 00}       # clear out the BLX in the way of the next two replacements
-  - ReplaceBytes: {Offset: 14, FindH: 61 E9 02 23 00 00, ReplaceH: 08 35 50 2D F7 D1} # adds r5, #8   cmp r5, #80   bne #-10 ## NOTE: 8*10=80
+  - ReplaceBytes: {Offset: 14, FindH: 61 E9,             ReplaceH: 08 35}       # adds  r5, #8 (sizeof(double))
+  - ReplaceBytes: {Offset: 16, FindH: 02 23,             ReplaceH: 50 2D}       # cmp   r5, #80 (sizeof(double) * 10)
+  - ReplaceBytes: {Offset: 18, FindH: 00 00,             ReplaceH: F6 D1}       # bne   #-12 (18 - 2)
     # restore r5
-  - ReplaceBytes: {Offset: 20, FindH: 00 00,             ReplaceH: 4D 46}             # mov r5, sb
+  - ReplaceBytes: {Offset: 20, FindH: 00 00,             ReplaceH: 4D 46}       # mov   r5, sb
     # finished replacements
   - BaseAddress: 0
     #
@@ -194,20 +204,20 @@ Custom font sizes:
   #
   - BaseAddress: "N3FontTypeUtil::fontSizes()"
   # Initial font size:
-  - ReplaceInt: {Offset: 362, Find:   8, Replace:   8} # Other devices
-  - ReplaceInt: {Offset: 358, Find:  11, Replace:  11} # LibraH2O
-  - ReplaceInt: {Offset:  36, Find:  10, Replace:  10} # ClaraHD/GloHD
-  - ReplaceInt: {Offset: 390, Find:  14, Replace:  14} # Sage/Forma/AuraOne/Elipsa
+  - ReplaceInt: {Offset:  378, Find:   8, Replace:   8} # Other devices
+  - ReplaceInt: {Offset:  374, Find:  11, Replace:  11} # LibraH2O (storm)
+  - ReplaceInt: {Offset:   36, Find:  10, Replace:  10} # GloHD/ClaraHD (alyssum nova)
+  - ReplaceInt: {Offset:  404, Find:  14, Replace:  14} # Forma/AuraOne/Sage/Elipsa (daylight)
   # Increment:
-  - ReplaceInt: {Offset:  78, Find:  21, Replace:  43} # Add font sizes in increments of 1 until this size exceeded
-  - ReplaceInt: {Offset:  88, Find:  22, Replace:  44} # Continue from this font size
-  - ReplaceInt: {Offset: 218, Find:  49, Replace:  67} # Add font sizes in increments of 2 until this size exceeded
-  - ReplaceInt: {Offset: 224, Find:  50, Replace:  68} # Continue from this font size
+  - ReplaceInt: {Offset:  222, Find:  21, Replace:  43} # Add font sizes in increments of 1 until this size exceeded
+  - ReplaceInt: {Offset:  228, Find:  22, Replace:  44} # Continue from this font size
+  - ReplaceInt: {Offset:  250, Find:  49, Replace:  67} # Add font sizes in increments of 2 until this size exceeded
+  - ReplaceInt: {Offset:  256, Find:  50, Replace:  68} # Continue from this font size
   # Now increment by +4 until final font size:
-  - ReplaceInt: {Offset: 408, Find:  90, Replace:  80} # Other devices
-  - ReplaceInt: {Offset: 412, Find: 122, Replace:  88} # Aura/Nia/Glo
-  - ReplaceInt: {Offset:  50, Find: 150, Replace: 108} # GloHD/AuraH2O/LibraH2O/AuraHD/ClaraHD/Libra2
-  - ReplaceInt: {Offset: 386, Find: 195, Replace: 132} # Sage/Forma/AuraOne/Elipsa
+  - ReplaceInt: {Offset:  420, Find:   90, Replace:   80} # Other devices
+  - ReplaceInt: {Offset:  422, Find:  122, Replace:   88} # Aura/Glo/Nia (phoenix)
+  - ReplaceInt: {Offset:   48, Find:  150, Replace:  108} # LibraH2O/AuraHD/ClaraHD/GloHD/AuraH2O/Libra2 (dragon)
+  - ReplaceInt: {Offset:  400, Find:  195, Replace:  132} # Forma/AuraOne/Sage/Elipsa (daylight)
 
 ePub fixed top/bottom margins:
   - Enabled: no
@@ -323,8 +333,8 @@ Set KePub hyphenation:
 
       (The publisher can still turn hyphenation off/on in the book's stylesheet.)
     # == "justify"
-  - ReplaceBytes: {Base: "KepubBookReader::pageStyleCss(bool)", Offset: 1432, FindInstBLX: {SymPLT: "QString::operator==(QLatin1String) const"}, ReplaceH: 01 20 01 20} # Alternative 1: Always turn KePub hyphenation on
-# - ReplaceBytes: {Base: "KepubBookReader::pageStyleCss(bool)", Offset: 1432, FindInstBLX: {SymPLT: "QString::operator==(QLatin1String) const"}, ReplaceH: 00 20 00 20} # Alternative 2: Never turn KePub hyphenation on
+  - ReplaceBytes: {Base: "KepubBookReader::pageStyleCss(bool)", Offset: 1904, FindInstBLX: {SymPLT: "QString::operator==(QLatin1String) const"}, ReplaceH: 01 20 01 20} # Alternative 1: Always turn KePub hyphenation on
+# - ReplaceBytes: {Base: "KepubBookReader::pageStyleCss(bool)", Offset: 1904, FindInstBLX: {SymPLT: "QString::operator==(QLatin1String) const"}, ReplaceH: 00 20 00 20} # Alternative 2: Never turn KePub hyphenation on
 
 Force user line spacing in KePubs:
   - Enabled: no
@@ -397,23 +407,7 @@ ePub constant font sharpness:
   - FindBaseAddressString: "\0\0 -kobo-font-sharpness: %1;"
   - ReplaceString: {Offset: 3, Find: "-kobo-font-sharpness: %1", Replace: "-kobo-font-sharpness:0.2", MustMatchLength: yes}
 
-KePub constant font sharpness:
-  - Enabled: no
-  - Description: |
-      With this patch the KePub reader will use a constant sharpness value of 0.2,
-      instead of the value set by the advanced font sharpness/weight slider. The
-      slider sharpness values range from -0.4(min.) to 0.2(max.), default -0.0666.
-    #     body { -kobo-font-sharpness: %1; -kobo-font-thickness: %2; }\n
-    # --> body{-kobo-font-sharpness:0.0/*%1*/;-kobo-font-thickness:%2}\n
-  - FindReplaceString:
-      Find:    "body { -kobo-font-sharpness: %1; -kobo-font-thickness: %2; }\n"
-      Replace: "body{-kobo-font-sharpness:0.0/*%1*/;-kobo-font-thickness:%2}\n"
-      MustMatchLength: yes
-  - ReplaceString:
-      Offset: 5
-      Find:    "-kobo-font-sharpness:0.0"
-      Replace: "-kobo-font-sharpness:0.2" # Replacement sharpness value
-      MustMatchLength: yes
+# MISSING: KePub constant font sharpness (not enough room for neutralizing the QString arg; we will probably need to patch that one out)
 
 Un-Force user text-align in div,p tags in KePubs:
   - Enabled: no
@@ -477,17 +471,7 @@ Un-force link decoration in KePubs:
   - ReplaceString: {Offset: 0x27, Find: "b", Replace: "_"} # Disable border-bottom style
   - ReplaceString: {Offset: 0x53, Find: "c", Replace: "_"} # Disable color style
 
-Ignore .otf fonts:
-  - Enabled: no
-  - Description:
-      Ignores all sideloaded and pre-installed .otf fonts.
-      (Currently the only pre-installed .otf font is OpenDyslexic.)
-      Embedded .otf fonts should continue to work as normal.
-  - FindReplaceString: {Find: "*.otf", Replace: "_.otf"}
-
-# MISSING: Set font scale factor (this will need a complete rewrite for 18220+
-# since the logic has been completely reworked; also note that it may not be
-# necessary on certain devices anymore)
+# MISSING: Ignore .otf fonts (this will probably need to become a fontickle patch)
 
 # The following patch(es) were made by jackie_w
 
@@ -502,17 +486,18 @@ Dictionary text font-family/font-size/line-height:
                   dictionaries being released Oct 1st 2020
       See https://www.mobileread.com/forums/showpost.php?p=3521137&postcount=48
       for screenshots
+      4.32.19501: major font handling changes. Customising font-family now very limited
       #
       You can change one or more of the following properties:
-      - font-family
+      - font-family (very limited choice from fw >= 4.32.19501)
       - font-size
       - line-height
       #
       These are the Kobo defaults
-                Glo - Georgia  23px  1.4em
-                H2O - Georgia  29px  1.4em
-              GloHD - Georgia  32px  1.4em
-            AuraONE - Georgia  42px  1.4em
+                Glo - serif (Georgia)  23px  1.4em
+                H2O - serif (Georgia)  29px  1.4em
+              GloHD - serif (Georgia)  32px  1.4em
+            AuraONE - serif (Georgia)  42px  1.4em
 
   # Stage 1: Change DictionaryView to remove %variables
   # from:
@@ -527,7 +512,7 @@ Dictionary text font-family/font-size/line-height:
   #   .sc, .sc * { font-variant: small-caps; }
   #   .block, .border { border-radius: 3px; padding: 0em .2em; font-size: 90%; }
   # to:
-  #   body {font-size:%1px; line-height:1.40em; font-family:Georgia                         ;}
+  #   body {font-size:%1px; line-height:1.40em; font-family:serif                           ;}
   #   body {padding-left:0.5em}
   #   span.word {font-weight:bold; font-size:130%; margin-left:-0.3em}
   #   ol {margin-left:1em; margin-top:0}
@@ -541,39 +526,27 @@ Dictionary text font-family/font-size/line-height:
   # ##### N.B. Do not change the next 4 lines #####
   - FindReplaceString:
       Find:    "body { padding-left: %3px; }\nbody { font: %1px serif; line-height: 1.4em; }\nspan.word { font-weight: bold; font-size: 130%; margin-left: -%3px; }\ndiv.descriptionFont { font-family: serif; }\nol { font-size: %1px; margin-left: %2em; margin-top: 0px; }\nol p { font-size: %1px; }\ni, i * { font-style: italic; }\nb, b * { font-weight: bold; }\n.sc, .sc * { font-variant: small-caps; }\n.block, .border { border-radius: 3px; padding: 0em .2em; font-size: 90%; }\n"
-      Replace: "body {font-size:%1px; line-height:1.40em; font-family:Georgia                         ;}\nbody {padding-left:0.5em}\nspan.word {font-weight:bold; font-size:130%; margin-left:-0.3em}\nol {margin-left:1em; margin-top:0}\nblockquote {margin:.3em 0 .3em 1em}\nblockquote>blockquote {margin:-.3em 0 0 2em}\ni, i * {font-style:italic}\nb, b * {font-weight:bold}\n.sc, .sc * {font-variant:small-caps}\n.block, .border {border-radius:3px; padding:0 .2em; font-size:90%}\n"
+      Replace: "body {font-size:%1px; line-height:1.40em; font-family:serif                           ;}\nbody {padding-left:0.5em}\nspan.word {font-weight:bold; font-size:130%; margin-left:-0.3em}\nol {margin-left:1em; margin-top:0}\nblockquote {margin:.3em 0 .3em 1em}\nblockquote>blockquote {margin:-.3em 0 0 2em}\ni, i * {font-style:italic}\nb, b * {font-weight:bold}\n.sc, .sc * {font-variant:small-caps}\n.block, .border {border-radius:3px; padding:0 .2em; font-size:90%}\n"
       MustMatchLength: yes
   # ##### N.B. Do not change anything above this line #####
 
   # Stage 2: N.B. You MUST keep old and new strings EXACTLY the same length
 
-  # Notes for changing font-family:
-  #   1.  Pad the shorter of the old/new strings with spaces to
-  #       keep same length for both strings (see examples below)
-  #
-  #   2.  If the new font-family name (max. 32 chars) contains any spaces it
-  #       should be wrapped in 'single quotes' (see examples 2, 3)
-  #
-  #   3.  To change from Georgia to the Kobo default sans-serif font, Avenir,
-  #       use either one of the following to achieve the same result:
-  #       - sans-serif
-  #       - 'Avenir Next Medium'
-
-  # Un-comment ONE ONLY of the following ReplaceString examples
-  #   to change dictionary font-family from default Georgia:
-  #     - to a different built-in font
-  #     - to one of your sideloaded custom fonts
-
-  #- ReplaceString: {Offset: 54, Find: "Georgia   ", Replace: "sans-serif", MustMatchLength: yes}
-  #- ReplaceString: {Offset: 54, Find: "Georgia    ", Replace: "'Gill Sans'", MustMatchLength: yes}
-  #- ReplaceString: {Offset: 54, Find: "Georgia      ", Replace: "'Kobo Nickel'", MustMatchLength: yes}
-  #- ReplaceString: {Offset: 54, Find: "Georgia ", Replace: "Bookerly", MustMatchLength: yes}
+  # N.B: From fw 4.32.19508 these are the only customised font-family values reported as having any effect
+  #      The first example will use the default sans-serif font, i.e. Avenir for most non-CJK GUI language locales
+  
+  # Un-comment ONE ONLY of the following 4 ReplaceString examples
+  #- ReplaceString: {Offset: 54, Find: "serif     ",             Replace: "sans-serif",             MustMatchLength: yes}
+  #- ReplaceString: {Offset: 54, Find: "serif                 ", Replace: "'KBJ-TsukuMin Pr6N RB'", MustMatchLength: yes}
+  #- ReplaceString: {Offset: 54, Find: "serif                ",  Replace: "'KBJ-UDKakugo Pr6N M'",  MustMatchLength: yes}
+  #- ReplaceString: {Offset: 54, Find: "serif           ",       Replace: "'AR UDJingxihei'",       MustMatchLength: yes}
 
   # Un-comment and edit next line to change font-size
   #- ReplaceString: {Offset: 16, Find: "%1px", Replace: "32px", MustMatchLength: yes}
 
   # Un-comment and edit next line to change line spacing
   #- ReplaceString: {Offset: 34, Find: "1.40em", Replace: "1.30em", MustMatchLength: yes}
+
 
 Custom navigation menu page number text:
   - Enabled: no
@@ -597,12 +570,14 @@ KePub stylesheet additions - text justify:
   #
   - FindReplaceString: {Find: "/*********************************/", Replace: "body{text-align:justify           }", MustMatchLength: yes}
 
-KePub stylesheet additions - optimizeSpeed:
+KePub stylesheet additions - word-spacing:
   - Enabled: no
   - PatchGroup: KePub stylesheet additions alternatives
-  - Description: |
-      Disables ligatures/kerning, but fixes some rendering problems that affect
-      fully justified text in KePubs
+  - Description: | 
+        Reduces the space between words in KePubs. 
+        Probably only useful to those who prefer to read KePubs with left/right full justification, i.e. not ragged-right edge.
+        See https://www.mobileread.com/forums/showpost.php?p=4217711&postcount=28
+            for screenshots showing the effect of enabling this patch.
   - FindBaseAddressString: ".KBSearchResult, .KBAnnotation, .KBHighlighting {"
   # *** Don't change anything in the 4 ReplaceString lines below ***
   - ReplaceString: {Find: ".KBSearchResult, .KBAnnotation, .KBHighlighting { font-size: 100% !important; -webkit-text-combine: inherit !important; }\n", Replace: ".KBSearchResult,.KBAnnotation,.KBHighlighting{font-size:100%!important;-webkit-text-combine:inherit!important}.KBAnnotatio", MustMatchLength: yes}
@@ -611,7 +586,15 @@ KePub stylesheet additions - optimizeSpeed:
   - ReplaceString: {Offset: 299, Find: ".KBAnnotation[writingMode=\"vertical-lr\"] { border-left: 2px solid black !important; }", Replace: "ertical-lr\"]{border-left:2px solid #000!important}/*********************************/", MustMatchLength: yes}
   # *** Don't change anything in the 4 ReplaceString lines above ***
   #
-  - FindReplaceString: {Find: "/*********************************/", Replace: "body{text-rendering:optimizeSpeed }", MustMatchLength: yes}
+  # Customise the -0.05 value if you prefer.
+  # N.B. Be careful, if it's too big some words may get joined together.
+  - FindReplaceString: {Find: "/*********************************/", Replace: "body{word-spacing:-0.05em         }", MustMatchLength: yes}
+
+# KePub stylesheet additions - optimizeSpeed: retired
+# KePub stylesheet additions - optimizeLegibility: retired
+# Edit Kobo config (.kobo/Kobo/Kobo eReader.conf) to achieve same result.
+# For more detail, see MR post https://www.mobileread.com/forums/showpost.php?p=4215805&postcount=40
+
 
 # The following patch(es) are ported from jcn363's patches
 
@@ -703,7 +686,7 @@ Greek Keyboard (GloHD/ClaraHD/AuraOne/H2O2):
   - Enabled: no
   - PatchGroup: Keyboard alternatives
   - Description: |
-      Replaces keys on the Extended Latin keypad with Cyrillic alternatives.
+      Replaces keys on the Extended Latin keypad with Greek alternatives.
 
       Note that after the device boots, the keypad might just show blank squares
       until after the first book has been opened.
@@ -833,7 +816,7 @@ Both page turn buttons go next:
   - Description: Make both page turn buttons on the Forma go next in the reader.
   - ReplaceBytes:
       Base:          "ReadingView::keyPressEvent(QKeyEvent*)"
-      Offset:        54
+      Offset:        82
       FindInstBW:    {SymPLTTail: "ReadingView::prevPageWithTimer()"}
       ReplaceInstBW: {SymPLTTail: "ReadingView::nextPageWithTimer()"}
 
@@ -841,7 +824,7 @@ Both page turn sides go next:
   - Enabled: no
   - Description: Make both page turn sides go next in the reader.
   # In ReadingView::processTap(TapGesture*) where the page direction is checked:
-  - BaseAddress:  {Sym: "ReadingView::processTap(TapGesture*)", Rel: 652}
+  - BaseAddress:  {Sym: "ReadingView::processTap(TapGesture*)", Rel: 560}
   - ReplaceBytes: {Offset:  0, FindInstBLX: {SymPLT: "ReadingView::leftToRightPageProgressDirection() const"}, CheckOnly: true}
   # nop the branch for checking if left-to-right (so it always runs the swap of back/forward)
   - ReplaceBytes: {Offset:  4, FindH: 18 B9, ReplaceInstNOP: true}
@@ -864,10 +847,12 @@ Replace adobe page numbers toggle with invert screen:
   - Enabled: no
   - Description: |
       Replaces the adobe page numbers toggle in reading settings with an invert
-      screen one.
+      screen one. Due to recent firmware changes (since 18220, it is set by the
+      kobo QPA during initialization), it will only take effect after a reboot.
+      See https://github.com/pgaskin/NickelMenu/issues/111 for more information.
   # Settings page
   - BaseAddress:  "N3SettingsReadingView::N3SettingsReadingView(QWidget*)"
-  - ReplaceBytes: {Offset: 914, FindInstBLX: {SymPLT: "ReadingSettings::getShowAdobePageNumbers()"},     ReplaceInstBLX: {SymPLT: "FeatureSettings::invertScreen()"}}
+  - ReplaceBytes: {Offset: 890, FindInstBLX: {SymPLT: "ReadingSettings::getShowAdobePageNumbers()"},     ReplaceInstBLX: {SymPLT: "FeatureSettings::invertScreen()"}}
   # Settings page controller
   - BaseAddress:  {Sym: "N3SettingsReadingController::showAdobePageNumbersToggled()"}
   - ReplaceBytes: {Offset:  74, FindInstBLX: {SymPLT: "ReadingSettings::getShowAdobePageNumbers()"},     ReplaceInstBLX: {SymPLT: "FeatureSettings::invertScreen()"}}
@@ -906,7 +891,7 @@ Hide browser from beta features:
   - Description: Hides the built-in browser from beta features.
   - ReplaceBytes:
       Base:        "N3SettingsExtrasView::N3SettingsExtrasView(QWidget*)"
-      Offset:      1474
+      Offset:      1392
       FindInstBLX: {SymPLT: "Device::isParentalControlEnabled() const"}
       ReplaceH:    4F F0 01 00
   - ReplaceBytes:
@@ -948,7 +933,6 @@ Disable all tutorial dialogs:
   - ReplaceBytes: {Base: "ApplicationSettings::libraryFTEShown()",                Offset: 54, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 01 00}
   - ReplaceBytes: {Base: "ApplicationSettings::zoomFTEShown()",                   Offset: 54, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 01 00}
   - ReplaceBytes: {Base: "ApplicationSettings::welcomeShown()",                   Offset: 54, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 01 00}
-  - ReplaceBytes: {Base: "ApplicationSettings::koboPlusPromoShown()",             Offset: 54, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 01 00}
   - ReplaceBytes: {Base: "ApplicationSettings::syncWarningDialogShown()",         Offset: 54, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 01 00}
   - ReplaceBytes: {Base: "ApplicationSettings::addedToMyWordsDialogShown()",      Offset: 54, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 01 00}
   - ReplaceBytes: {Base: "ApplicationSettings::longPressDialogShown()",           Offset: 54, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 01 00}
@@ -1024,44 +1008,19 @@ Change Browse Kobo home screen link target - Activity:
   - Description: See the comment above.
   - ReplaceBytes:
       Base:          "BrowseKoboWidget::tapped()"
-      Offset:        22
+      Offset:        26
       FindInstBW:    {SymPLTTail: "DiscoverNavMixin::storefront()"}        # Store
       ReplaceInstBW: {SymPLTTail: "ReadingLifeNavMixin::chooseActivity()"} # Activity
   - ReplaceBytes:
       Base:          "BrowseKoboWidget::tapped()"
-      Offset:        32
+      Offset:        36
       FindInstBW:    {SymPLTTail: "StoreNavMixin::overDriveFeaturedLists()"} # OverDrive
       ReplaceInstBW: {SymPLTTail: "ReadingLifeNavMixin::chooseActivity()"}   # Activity
   - ReplaceBytes:
       Base:           "BrowseKoboWidget::BrowseKoboWidget(QWidget*)"
-      Offset:         196
+      Offset:         206
       FindInstBLX:    {SymPLT: "N3DeviceCharm::shopName()"}   # "Shop Kobo" or "Walmart"
       ReplaceInstBLX: {SymPLT: "N3DeviceCharm::extrasName()"} # "Activity"
-  - ReplaceBytes:
-      Base:          "HomePageView::setOverDriveUser(OverDriveUser const&)"
-      Offset:         114
-      FindInstBLX:    {SymPLT: "GenericHomeWidget::setMetaText(QString)"} # "OverDrive"
-      ReplaceInstNOP: true
-
-Change Browse Kobo home screen link target - Articles:
-  - Enabled: no
-  - PatchGroup: Browse Kobo link target
-  - Description: See the comment above.
-  - ReplaceBytes:
-      Base:          "BrowseKoboWidget::tapped()"
-      Offset:        22
-      FindInstBW:    {SymPLTTail: "DiscoverNavMixin::storefront()"} # Store
-      ReplaceInstBW: {SymPLTTail: "MoreController::articles()"}     # Articles
-  - ReplaceBytes:
-      Base:          "BrowseKoboWidget::tapped()"
-      Offset:        32
-      FindInstBW:    {SymPLTTail: "StoreNavMixin::overDriveFeaturedLists()"} # OverDrive
-      ReplaceInstBW: {SymPLTTail: "MoreController::articles()"}              # Articles
-  - ReplaceBytes:
-      Base:           "BrowseKoboWidget::BrowseKoboWidget(QWidget*)"
-      Offset:         196
-      FindInstBLX:    {SymPLT: "N3DeviceCharm::shopName()"}           # "Shop Kobo" or "Walmart"
-      ReplaceInstBLX: {SymPLT: "N3DeviceCharm::articlesSearchName()"} # "My Articles"
   - ReplaceBytes:
       Base:          "HomePageView::setOverDriveUser(OverDriveUser const&)"
       Offset:         114
@@ -1084,21 +1043,22 @@ Set visible SmartLink:
   #  7 - KoboPlusFTE     - kobo plus enabled && not subscribed                 - KOBO PLUS: Browse Kobo Plus books                                - kobo store -> kobo plus
   #  8 - OverDrive       - overdrive enabled && signed in && have hold         - OVERDRIVE: View your public library holds                        - overdrive holds list
   # ROTATION MESSAGES (randomly chosen): (SmartLinkWidget::showRotationMessage, ActivityManager::smartLinkGeneralMessage, SmartLinkWidget::tapped)
-  #  1 - Pocket          - pocket not signed in                                - POCKET: Read articles from the web on your eReader               - pocket about
-  #  2 - KoboPlus        - kobo plus enabled && not subscribed                 - KOBO PLUS: Get unlimited access to books in all genres           - kobo store -> kobo plus
-  #  2 - KoboPlus        - kobo plus enabled && not subscribed                 - KOBO PLUS: Read as much as you want with a Kobo Plus subscription- kobo store -> kobo plus
-  #  3 - Overdrive       - overdrive enabled && not signed in                  - OVERDRIVE: Borrow eBooks from your public library                - overdrive about
-  #  4 - Categories      - always                                              - CATEGORIES: Browse fiction, romance, biography and more          - kobo store -> categories
-  #  9 - NaturalLight    - has light sensor && not viewed tutorial             - DEVICE NAME: Learn about the Natural Light feature               - rgb front light about
-  # 10 - QuickTour       - quick tour not shown && quick turn tile not visible - GETTING STARTED: Get to know your %0                             - quick tour
-  # 11 - ReadingTour     - read a book tour not showed                         - READING A BOOK: Get quick tips about reading on your eReader     - read a book tutorial
-  # 12 - UserGuide       - user guide present && not opened                    - USER GUIDE: Read the user guide for your %0                      - read -> user guide
-  # 13 - RelatedReads    - recent book available from Activity                 - RELATED READS: Discover books related to the ones you're reading - browse -> similar books
-  # 14 - Wishlist        - no wishlist items || something else                 - WISHLIST: Create a Wishlist of books you're interested in        - browse -> wishlist
-  # 15 - ReadingSettings - reading settings not changed                        - READING SETTINGS: Customize the way you read a book              - settings -> reading settings
-  # 16 - ReadingStats    - books finished > 0 && hours read rounded to .5 > 0  - READING STATS: You've finished %n books and read for %n hours    - reading life -> stats
-  # 17 - SuperPoints     - participating in super points && points > 2400      - KOBO SUPER POINTS: You have %0 Super Points to redeem            - kobo store
-  # 18 - PocketUser      - unread pocket articles > 0                          - POCKET: Catch up on the %n article(s) you added recently         - library -> pocket
+  #  1 - Pocket          - pocket not signed in                                - POCKET: Read articles from the web on your eReader                - pocket about
+  #  2 - KoboPlus        - kobo plus enabled && not subscribed                 - KOBO PLUS: Upgrade to a Kobo Plus Read & Listen subscription      - kobo store -> kobo plus
+  #  2 - KoboPlus        - kobo plus enabled && not subscribed                 - KOBO PLUS: Read as much as you want with a Kobo Plus subscription - kobo store -> kobo plus
+  #  3 - Overdrive       - overdrive enabled && not signed in                  - OVERDRIVE: Borrow eBooks from your public library                 - overdrive about
+  #  4 - Categories      - always                                              - CATEGORIES: Browse fiction, romance, biography and more           - kobo store -> categories
+  #  9 - NaturalLight    - has light sensor && not viewed tutorial             - DEVICE NAME: Learn about the Natural Light feature                - rgb front light about
+  # 10 - QuickTour       - quick tour not shown && quick turn tile not visible - GETTING STARTED: Get to know your %0                              - quick tour
+  # 11 - ReadingTour     - read a book tour not showed                         - READING A BOOK: Get quick tips about reading on your eReader      - read a book tutorial
+  # 12 - UserGuide       - user guide present && not opened                    - USER GUIDE: Read the user guide for your %0                       - read -> user guide
+  # 13 - RelatedReads    - recent book available from Activity                 - RELATED READS: Discover books related to the ones you're reading  - browse -> similar books
+  # 14 - Wishlist        - no wishlist items || something else                 - WISHLIST: Create a Wishlist of books you're interested in         - browse -> wishlist
+  # 15 - ReadingSettings - reading settings not changed                        - READING SETTINGS: Customize the way you read a book               - settings -> reading settings
+  # 16 - ReadingStats    - books finished > 0 && hours read rounded to .5 > 0  - READING STATS: You've finished %n books and read for %n hours     - reading life -> stats
+  # 17 - SuperPoints     - participating in super points && points > 2400      - KOBO SUPER POINTS: You have %0 Super Points to redeem             - kobo store
+  # 18 - PocketUser      - unread pocket articles > 0                          - POCKET: Catch up on the %n article(s) you added recently          - library -> pocket
+  # 19 - Audiobooks      - supports audiobooks && audiobooks enabled           - AUDIOBOOKS: Get started with Audiobooks on your eReader           - kobo store -> audiobooks
   #
   - BaseAddress:  {Sym: "SmartLinkWidget::showRotationMessage(Device const&)", Rel: 20}
   - ReplaceBytes: {FindInstBLX: {SymPLT: "ActivityManager::smartLinkGeneralMessage(Device const&)"}, ReplaceH: 4F F0 04 00} # MOV.W r0, #4
@@ -1136,14 +1096,14 @@ Never show Kobo Plus, wishlist, and points SmartLinks:
   - Description: Removes Kobo Plus, wishlist, and points SmartLinks from the rotation.
   - BaseAddress: "ActivityManager::smartLinkGeneralMessage(Device const&)"
   # NOP Kobo Plus (2):
-  - ReplaceBytes: {Offset: 292, FindH: 02 23, CheckOnly: true} # MOVS r3, #2
-  - ReplaceBytes: {Offset: 302, FindInstBLX: {SymPLT: "QVector<SmartLinkType>::append(SmartLinkType const&)"}, ReplaceInstNOP: true}
+  - ReplaceBytes: {Offset: 634, FindH: 02 23, CheckOnly: true} # MOVS r3, #2
+  - ReplaceBytes: {Offset: 644, FindInstBLX: {SymPLT: "QVector<SmartLinkType>::append(SmartLinkType const&)"}, ReplaceInstNOP: true}
   # NOP wishlist (14):
-  - ReplaceBytes: {Offset: 266, FindH: 0E 23, CheckOnly: true} # MOVS r3, #14
-  - ReplaceBytes: {Offset: 276, FindInstBLX: {SymPLT: "QVector<SmartLinkType>::append(SmartLinkType const&)"}, ReplaceInstNOP: true}
+  - ReplaceBytes: {Offset: 608, FindH: 0E 23, CheckOnly: true} # MOVS r3, #14
+  - ReplaceBytes: {Offset: 618, FindInstBLX: {SymPLT: "QVector<SmartLinkType>::append(SmartLinkType const&)"}, ReplaceInstNOP: true}
   # NOP super points (17):
-  - ReplaceBytes: {Offset: 1540, FindH: 11 23, CheckOnly: true} # MOVS r3, #17
-  - ReplaceBytes: {Offset: 1552, FindInstBLX: {SymPLT: "QVector<SmartLinkType>::append(SmartLinkType const&)"}, ReplaceInstNOP: true}
+  - ReplaceBytes: {Offset: 1492, FindH: 11 23, CheckOnly: true} # MOVS r3, #17
+  - ReplaceBytes: {Offset: 1504, FindInstBLX: {SymPLT: "QVector<SmartLinkType>::append(SmartLinkType const&)"}, ReplaceInstNOP: true}
 
 ###
 
@@ -1189,8 +1149,8 @@ Remove title from reading header/footer:
   # easy-to-update way by replacing the first QString::append (the dash) with a
   # QString::resize to zero (I would have done a QString::clear, but that symbol
   # isn't imported):
-  - BaseAddress:  {Sym: "ReadingFooter::update(QString const&, QString const&, QString const&, bool)", Rel: 298}
-  - ReplaceBytes: {Offset: 0, FindH: F9 68, ReplaceH: 00 21} # replace LDR r1, [...] with MOV r1, #0 (the LDR doesn't matter, but may to be updated to match)
+  - BaseAddress:  {Sym: "ReadingFooter::update(QString const&, QString const&, QString const&, bool)", Rel: 190}
+  - ReplaceBytes: {Offset: 0, FindH: 49 46, ReplaceH: 00 21} # replace MOV r1, sb with MOV r1, #0 (the MOV doesn't matter, but may to be updated to match, ensuring nothing after depends on it)
   - ReplaceBytes: {Offset: 4, FindInstBLX: {SymPLT: "QString::append(QString const&)"}, ReplaceInstBLX: {SymPLT: "QString::resize(int)"}}
 
 # Prevent Kobo from scanning dotfiles/folders (since 4.17.13651): See https://www.mobileread.com/forums/showthread.php?t=323083.
@@ -1260,7 +1220,7 @@ Allow rotation on all devices:
   - ReplaceBytes: {Base: "DevSettings::forceAllowLandscape()", Offset: 54, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 01 00}
   # In ReadingMenuView::ReadingMenuView, replace the value of Device::hasOrientationSensor,
   # which is passed to a function to hide/show the rotate icon:
-  - ReplaceBytes: {Base: "ReadingMenuView::ReadingMenuView(QWidget*)", Offset: 486, FindInstBLX: {SymPLT: "Device::hasOrientationSensor() const"}, ReplaceH: 4F F0 01 00}
+  - ReplaceBytes: {Base: "ReadingMenuView::updateReadingMenu()", Offset: 236, FindInstBLX: {SymPLT: "Device::hasOrientationSensor() const"}, ReplaceH: 4F F0 01 00}
   # Also fix sizing of popup by doing the same in RotatePopup::RotatePopup, but
   # note that this will make the Automatic option show too (and do nothing):
   - ReplaceBytes: {Base: "RotatePopup::RotatePopup(QWidget*)", Offset: 190, FindInstBLX: {SymPLT: "Device::hasOrientationSensor() const"}, ReplaceH: 4F F0 01 00}
@@ -1332,7 +1292,12 @@ Swap reading header/footer:
       ReplaceH: C0 69 # LDR r0, [r0, #0x1C]
   - ReplaceBytes:
       Base:     "ReadingView::updatePercentageFooter(QString const&)"
-      Offset:   158
+      Offset:   172
+      FindH:    C0 69 # LDR r0, [r0, #0x1C]
+      ReplaceH: 00 69 # LDR r0, [r0, #0x10]
+  - ReplaceBytes:
+      Base:     "ReadingView::updatePercentageFooter(QString const&)"
+      Offset:   286
       FindH:    C0 69 # LDR r0, [r0, #0x1C]
       ReplaceH: 00 69 # LDR r0, [r0, #0x10]
   - ReplaceBytes:
@@ -1356,25 +1321,8 @@ Swap reading header/footer:
       FindH:    DE F8 1C 40 # LDR.W r4, [lr, #0x1C]
       ReplaceH: DE F8 10 40 # LDR.W r4, [lr, #0x10]
 
-Enable advanced settings for all fonts:
-  - Enabled: no
-  - Description: |
-      This patch allows the advanced font options (weight/sharpness adjustments)
-      to work with sideloaded fonts too. (KEPUB - OTF and TTF. EPUB - TTF only.)
-  - ReplaceBytes:
-      Base:           "AdvancedFontSettingsController::loadView()"                                      # font dropdown in advanced font settings dialog
-      Offset:         132
-      FindInstBLX:    {SymPLT: "N3FontTypeUtil::setupMonotypeDropdown(TouchDropDown*, QString const&)"} # monotype fonts only
-      ReplaceInstBLX: {SymPLT: "N3FontTypeUtil::setupDropdown(TouchDropDown*, QString const&)"}         # all fonts
-  - ReplaceBytes:
-      Base:           "ReadingMenuFontSettingsController::setupAdvancedOption(QString const&)"
-      Offset:         112
-      FindInstBLX:    {SymPLT: "N3FontTypeUtil::isMonotypeFont(QString const&)"}
-      ReplaceH:       4F F0 01 00
-
-# MISSING: ePub uniform font scale (this will need a complete rewrite for 18220+
-# since the logic has been completely reworked; also note that it may not be
-# necessary on certain devices anymore)
+# Note: The "Enable advanced settings for all fonts" patch is no longer
+# necessary since the advanced font settings are now available for all fonts.
 
 Customize ComfortLight settings:
   - Enabled: no
@@ -1391,7 +1339,7 @@ Customize ComfortLight settings:
   # In an unnamed subroutine two layers into FrontLightPopupController::loadView
   # (find it by going back from QTime::addSecs), the times for the dropdown are
   # generated into a QVector<QPair<QString, QTime>> with a simple loop.
-  - BaseAddress: 0xBAF2C8 # find the base of the unnamed subroutine with the x-ref to _ZN5QTimeC1Eiiii
+  - BaseAddress: 0xCDF204 # find the base of the unnamed subroutine with the x-ref to _ZN5QTimeC1Eiiii
   #
   # Change the initial hour / first bedtime dropdown item passed to the QTime
   # constructor (mov r1, #21):
@@ -1420,21 +1368,21 @@ Customize ComfortLight settings:
   # Change the sunset time (the transition to a warmer temperature starts here
   # and transitions until the bedtime chosen) (this should be 1-3 hours before
   # the minimum bedtime from the first replacement above) (mov r1, #18):
-  - ReplaceInt: {Offset: 158, Find: 18, Replace: 16} # 18:00 (9PM-3=6PM) -> 16:00 (5PM-1=4PM)
+  - ReplaceInt: {Offset: 228, Find: 18, Replace: 16} # 18:00 (9PM-3=6PM) -> 16:00 (5PM-1=4PM)
   #
   # Change the time for the sunset timer to fire at (this is passed to a QTime
   # constructor which is passed to PowerTime::fireAt) (mov r1, #18):
-  - ReplaceInt: {Offset: 438, Find: 18, Replace: 16} # should match the sunset time above
+  - ReplaceInt: {Offset: 508, Find: 18, Replace: 16} # should match the sunset time above
   #
   # Optional: Change the sunrise start time (the transition back to a cooler
   # temperature starts here) (this should be sometime after the last bedtime,
   # but before the sunset time) (mov r1, #5):
-  - ReplaceInt: {Offset: 192, Find: 5, Replace: 5} # 5AM
+  - ReplaceInt: {Offset: 262, Find: 5, Replace: 5} # 5AM
   #
   # Optional: Change the sunrise end time (the transition back to a cooler
   # temperature ends here) (this should be 1-3 hours after the sunrise start but
   # before the sunset time or bad things will happen with negative values) (mov r1, #7):
-  - ReplaceInt: {Offset: 138, Find: 7, Replace: 7} # 5AM+2=7AM
+  - ReplaceInt: {Offset: 208, Find: 7, Replace: 7} # 5AM+2=7AM
 
 # The following patches allow you to enable a config file option with a patch.
 
@@ -1473,4 +1421,39 @@ PowerSettings - UnlockEnabled:
   - Description: Disables/enables the slide to unlock feature.
   - ReplaceBytes: {Base: "PowerSettings::getUnlockEnabled()", Offset: 120, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 00 00} # disable
 # - ReplaceBytes: {Base: "PowerSettings::getUnlockEnabled()", Offset: 120, FindInstBLX: {SymPLT: "QVariant::toBool() const"}, ReplaceH: 4F F0 01 00} # enable
+
+# The following patch(es) were made by sherman
+
+Unify font sizes:
+  - Enabled: no
+  - Description: |
+      Attempt to unify the font sizes between epub and kepub. Without this patch
+      epub font sizes can be much larger than kepub at the same size setting.
+    # From my current understanding, the final font size for epubs is calculated
+    # as follows: ( font_size / scale_factor ) * DPI, where 'scale_factor' =
+    # 25.0. It seems RMSDK must be handling DPI elsewhere however, because the
+    # DPI multiplication here seems to have a detrimental effect, and behaves
+    # differently on different devices. This patch changes the 'scale_factor' to
+    # 2.5, and replaces the call to get DPI with a constant multiplier (16).
+    # The results of using these values are equivalent to  
+    # ( font_size / 15.0 ) * 96 which is what I suspect the kepub formula is.
+    # Note, that the replacement values are limited to 0.25 - 31.0 in 0.25
+    # increments.
+    #
+    # Refer to https://github.com/pgaskin/kobopatch-patches/issues/96 for more
+    # information.
+  # EPUB settings:
+  - BaseAddress:
+      Sym: "AdobeStyling::update(QString const&)"
+      Rel: 5796 # at ReadingSettings::getReadingFontSizeScaleFactor(float, float)
+  # Set the scale factor to 2.5
+  - ReplaceBytes:
+      Offset:   -20
+      FindH:    F3 EE 09 0A # vmov.f32 s1, #25.0
+      ReplaceH: F0 EE 04 0A # vmov.f32 s1, #2.5
+  # Replace QScreen::logicalDotsPerInchX() with our own multiplier of 16.0
+  - ReplaceBytes:
+      Offset:      26
+      FindInstBLX: {SymPLT: "QScreen::logicalDotsPerInchX() const"}
+      ReplaceH:    B3 EE 00 0B # vmov.f64 d0, #16.0
 
