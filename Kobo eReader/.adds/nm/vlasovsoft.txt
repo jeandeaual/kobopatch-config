@@ -1,0 +1,6 @@
+# Launch Vlasovsoft via KFMon
+# NOTE: .adds/nm/kfmon will generate this automatically
+#menu_item :main :Vlasovsoft :kfmon     :vlasovsoft.png
+
+# Launch Vlasovsoft directly via NM (>= KOReader 2020.05)
+#menu_item :main :Vlasovsoft :cmd_spawn :quiet :exec /mnt/onboard/.adds/vlasovsoft/launcher.sh
